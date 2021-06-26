@@ -10,46 +10,59 @@ import (
 	"time"
 )
 
-const (
-	baseEndpoint = "https://api.thepeer.co"
-)
+// Only reason we have this as a var is to be able to change it during
+// tests. I admit this is a tad lazy and the baseEndpoint should live on
+// the Client struct :))
+var baseEndpoint = "https://api.thepeer.co"
 
-type basicAuthransport struct {
+type xAPIKeyAuthransport struct {
 	originalTransport http.RoundTripper
 	secret            string
 }
 
-func (c *basicAuthransport) RoundTrip(r *http.Request) (*http.Response, error) {
+func (c *xAPIKeyAuthransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("x-api-key", c.secret)
 	return c.originalTransport.RoundTrip(r)
 }
 
 type Client struct {
-	c *http.Client
+	c      *http.Client
+	secret string
 }
 
-func New(c *http.Client) *Client {
+func New(opts ...Option) (*Client, error) {
+	c := &Client{}
 
-	if c == nil {
-		c = &http.Client{
-			Transport: &basicAuthransport{
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	if IsStringEmpty(c.secret) {
+		return nil, errors.New("please provide your secret key")
+	}
+
+	if c.c == nil {
+		c.c = &http.Client{
+			Transport: &xAPIKeyAuthransport{
 				originalTransport: http.DefaultTransport,
+				secret:            c.secret,
 			},
 			Timeout: time.Second * 5,
 		}
 	}
 
-	return &Client{c: c}
+	c.secret = ""
+
+	return c, nil
 }
 
 func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
-	var p = new(Transaction)
+	p := new(Transaction)
 
 	r, err := http.NewRequest(http.MethodPost,
 		fmt.Sprintf("%s/send/%s", baseEndpoint, receipt),
 		strings.NewReader("{}"))
-
 	if err != nil {
 		return p, err
 	}
@@ -78,8 +91,7 @@ func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
 }
 
 func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
-
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
 		return err
@@ -114,17 +126,20 @@ func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
 }
 
 func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
+	if IsStringEmpty(opts.Reference) {
+		return IndexedUser{}, errors.New("please provide the user reference")
+	}
 
-	var p = new(indexedUserResponse)
+	p := new(indexedUserResponse)
 
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
 		return IndexedUser{}, err
 	}
 
-	r, err := http.NewRequest(http.MethodPost,
-		fmt.Sprintf("%s/users/update/%s", baseEndpoint, opts.Identifier), buf)
+	r, err := http.NewRequest(http.MethodPut,
+		fmt.Sprintf("%s/users/update/%s", baseEndpoint, opts.Reference), buf)
 	if err != nil {
 		return IndexedUser{}, err
 	}
@@ -152,10 +167,9 @@ func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
 }
 
 func (c *Client) IndexUser(opts *IndexUserOptions) (IndexedUser, error) {
+	p := new(indexedUserResponse)
 
-	var p = new(indexedUserResponse)
-
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
 		return IndexedUser{}, err
@@ -190,12 +204,10 @@ func (c *Client) IndexUser(opts *IndexUserOptions) (IndexedUser, error) {
 }
 
 func (c *Client) FetchReceipt(id string) (*Receipt, error) {
-
-	var p = new(receiptResponse)
+	p := new(receiptResponse)
 
 	r, err := http.NewRequest(http.MethodGet,
 		fmt.Sprintf("%s/verify/%s", baseEndpoint, id), nil)
-
 	if err != nil {
 		return nil, err
 	}

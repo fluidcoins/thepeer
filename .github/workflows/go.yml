@@ -31,12 +31,13 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
-    - name: Get and verify dependencies
-      run: go mod download && go mod verify
+    - name: Get dependencies
+      run:  go get -t ./...
 
     - name: Go vet
       run: go vet ./...
 
     - name: Run tests
-      run: go test -v ./...
-
+      run: go test -tags integration -v ./...
+      env:
+        THEPEER_SECRET_KEY: ${{ secrets.THEPEER_SECRET_KEY }}
