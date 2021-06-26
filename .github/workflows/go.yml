@@ -31,8 +31,8 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
-    - name: Get and verify dependencies
-      run: go mod download && go mod verify
+    - name: Get dependencies
+      run: go mod download
 
     - name: Go vet
       run: go vet ./...
