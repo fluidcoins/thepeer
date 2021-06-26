@@ -1,0 +1,16 @@
+name: lint code
+on:
+  pull_request:
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+
+          # Optional: show only new issues if it's a pull request. The default value is `false`.
+          only-new-issues: true
