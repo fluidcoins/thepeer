@@ -15,12 +15,12 @@ import (
 // the Client struct :))
 var baseEndpoint = "https://api.thepeer.co"
 
-type basicAuthransport struct {
+type xAPIKeyAuthransport struct {
 	originalTransport http.RoundTripper
 	secret            string
 }
 
-func (c *basicAuthransport) RoundTrip(r *http.Request) (*http.Response, error) {
+func (c *xAPIKeyAuthransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("x-api-key", c.secret)
 	return c.originalTransport.RoundTrip(r)
@@ -44,7 +44,7 @@ func New(opts ...Option) (*Client, error) {
 
 	if c.c == nil {
 		c.c = &http.Client{
-			Transport: &basicAuthransport{
+			Transport: &xAPIKeyAuthransport{
 				originalTransport: http.DefaultTransport,
 				secret:            c.secret,
 			},
