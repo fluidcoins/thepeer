@@ -33,10 +33,10 @@ func getClient(t *testing.T) *Client {
 }
 
 // consists of 3 tests really, kind of bad but it's our only option
-// we index a user and de index the user immediately.
+// we index, update and deindex a user.
 // cannot afford leaving silly data with ThePeer
-// Also there are no mocks here, this SDK is pretty small to be worth having to
-// put test servers running here and there.
+// Also there are no mocks here, this SDK is pretty small, so I am not sure if
+// it is worth it running test servers here and there to run
 
 type errorMsg struct {
 	Message string `json:"message"`
