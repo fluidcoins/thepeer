@@ -46,7 +46,6 @@ type errorMsg struct {
 }
 
 func TestClient_User(t *testing.T) {
-
 	c := getClient(t)
 
 	opts := &IndexUserOptions{

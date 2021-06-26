@@ -10,12 +10,10 @@ import (
 	"time"
 )
 
-var (
-	// Only reason we have this as a var is to be able to change it during
-	// tests. I admit this is a tad lazy and the baseEndpoint should live on
-	// the Client struct :))
-	baseEndpoint = "https://api.thepeer.co"
-)
+// Only reason we have this as a var is to be able to change it during
+// tests. I admit this is a tad lazy and the baseEndpoint should live on
+// the Client struct :))
+var baseEndpoint = "https://api.thepeer.co"
 
 type basicAuthransport struct {
 	originalTransport http.RoundTripper
@@ -34,7 +32,6 @@ type Client struct {
 }
 
 func New(opts ...Option) (*Client, error) {
-
 	c := &Client{}
 
 	for _, opt := range opts {
@@ -61,12 +58,11 @@ func New(opts ...Option) (*Client, error) {
 }
 
 func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
-	var p = new(Transaction)
+	p := new(Transaction)
 
 	r, err := http.NewRequest(http.MethodPost,
 		fmt.Sprintf("%s/send/%s", baseEndpoint, receipt),
 		strings.NewReader("{}"))
-
 	if err != nil {
 		return p, err
 	}
@@ -95,8 +91,7 @@ func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
 }
 
 func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
-
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
 		return err
@@ -131,14 +126,13 @@ func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
 }
 
 func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
-
 	if IsStringEmpty(opts.Reference) {
 		return IndexedUser{}, errors.New("please provide the user reference")
 	}
 
-	var p = new(indexedUserResponse)
+	p := new(indexedUserResponse)
 
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
 		return IndexedUser{}, err
@@ -173,10 +167,9 @@ func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
 }
 
 func (c *Client) IndexUser(opts *IndexUserOptions) (IndexedUser, error) {
+	p := new(indexedUserResponse)
 
-	var p = new(indexedUserResponse)
-
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
 		return IndexedUser{}, err
@@ -211,12 +204,10 @@ func (c *Client) IndexUser(opts *IndexUserOptions) (IndexedUser, error) {
 }
 
 func (c *Client) FetchReceipt(id string) (*Receipt, error) {
-
-	var p = new(receiptResponse)
+	p := new(receiptResponse)
 
 	r, err := http.NewRequest(http.MethodGet,
 		fmt.Sprintf("%s/verify/%s", baseEndpoint, id), nil)
-
 	if err != nil {
 		return nil, err
 	}
