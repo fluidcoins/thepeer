@@ -203,6 +203,43 @@ func (c *Client) IndexUser(opts *IndexUserOptions) (IndexedUser, error) {
 	return p.IndexedUser, json.NewDecoder(resp.Body).Decode(p)
 }
 
+func (c *Client) FetchTransaction(reference string) (*Transaction, error) {
+
+	var p = new(Transaction)
+
+	r, err := http.NewRequest(http.MethodGet,
+		fmt.Sprintf("%s/transactions/%s", baseEndpoint, reference), nil)
+
+	if err != nil {
+		return p, err
+	}
+
+	resp, err := c.c.Do(r)
+	if err != nil {
+		return p, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode > http.StatusCreated {
+		var s struct {
+			Message string `json:"message"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&s); err != nil {
+			return nil, err
+		}
+
+		return nil, errors.New(s.Message)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(p); err != nil {
+		return p, err
+	}
+
+	return p, nil
+}
+
 func (c *Client) FetchReceipt(id string) (*Receipt, error) {
 	p := new(receiptResponse)
 
