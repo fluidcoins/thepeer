@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-const (
+var (
+	// Only reason we have this as a var is to be able to change it during
+	// tests. I admit this is a tad lazy and the baseEndpoint should live on
+	// the Client struct :))
 	baseEndpoint = "https://api.thepeer.co"
 )
 
@@ -26,21 +29,35 @@ func (c *basicAuthransport) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 type Client struct {
-	c *http.Client
+	c      *http.Client
+	secret string
 }
 
-func New(c *http.Client) *Client {
+func New(opts ...Option) (*Client, error) {
 
-	if c == nil {
-		c = &http.Client{
+	c := &Client{}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	if IsStringEmpty(c.secret) {
+		return nil, errors.New("please provide your secret key")
+	}
+
+	if c.c == nil {
+		c.c = &http.Client{
 			Transport: &basicAuthransport{
 				originalTransport: http.DefaultTransport,
+				secret:            c.secret,
 			},
 			Timeout: time.Second * 5,
 		}
 	}
 
-	return &Client{c: c}
+	c.secret = ""
+
+	return c, nil
 }
 
 func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
@@ -115,6 +132,10 @@ func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
 
 func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
 
+	if IsStringEmpty(opts.Reference) {
+		return IndexedUser{}, errors.New("please provide the user reference")
+	}
+
 	var p = new(indexedUserResponse)
 
 	var buf = new(bytes.Buffer)
@@ -123,8 +144,8 @@ func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
 		return IndexedUser{}, err
 	}
 
-	r, err := http.NewRequest(http.MethodPost,
-		fmt.Sprintf("%s/users/update/%s", baseEndpoint, opts.Identifier), buf)
+	r, err := http.NewRequest(http.MethodPut,
+		fmt.Sprintf("%s/users/update/%s", baseEndpoint, opts.Reference), buf)
 	if err != nil {
 		return IndexedUser{}, err
 	}

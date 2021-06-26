@@ -41,13 +41,14 @@ type Transaction struct {
 }
 
 type IndexUserOptions struct {
-	FullName   string `json:"full_name"`
+	Name       string `json:"name"`
 	Identifier string `json:"identifier"`
 	Email      string `json:"email"`
 }
 
 type UpdateUserOptions struct {
 	Identifier string `json:"identifier"`
+	Reference  string `json:"-"`
 }
 
 type DeIndexUserOptions struct {
