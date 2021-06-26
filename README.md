@@ -10,7 +10,11 @@ go get github.com/fluidcoins/thepeer
 ### Usage
 
 ```go
-
+  	c,err := New(WithAPISecret("API_KEY"))
+	// check error
+	// Also you can pass in your own *http.Client as follows
+	// New(WithAPISecret("API_KEY"), WithHTTPClient(httpClient))
+	// Although, you have to make sure the provided client is authenticated with your api key
 	opts := &IndexUserOptions{
 		Name:       randomdata.FullName(randomdata.RandomGender),
 		Email:      randomdata.Email(),
