@@ -57,7 +57,7 @@ func New(opts ...Option) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
+func (c *Client) ProcessReceipt(receipt string) (*Transaction, error) {
 	p := new(Transaction)
 
 	r, err := http.NewRequest(http.MethodPost,
@@ -90,7 +90,7 @@ func (c *Client) SendReceipt(receipt string) (*Transaction, error) {
 	return p, json.NewDecoder(resp.Body).Decode(p)
 }
 
-func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
+func (c *Client) DeleteUser(opts *DeIndexUserOptions) error {
 	buf := new(bytes.Buffer)
 
 	if err := json.NewEncoder(buf).Encode(&opts); err != nil {
@@ -98,7 +98,7 @@ func (c *Client) DeIndexUser(opts *DeIndexUserOptions) error {
 	}
 
 	r, err := http.NewRequest(http.MethodDelete,
-		fmt.Sprintf("%s/users/delete/%s", baseEndpoint, opts.UserReference), buf)
+		fmt.Sprintf("%s/users/%s", baseEndpoint, opts.UserReference), buf)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (c *Client) UpdateUser(opts *UpdateUserOptions) (IndexedUser, error) {
 	}
 
 	r, err := http.NewRequest(http.MethodPut,
-		fmt.Sprintf("%s/users/update/%s", baseEndpoint, opts.Reference), buf)
+		fmt.Sprintf("%s/users/%s", baseEndpoint, opts.Reference), buf)
 	if err != nil {
 		return IndexedUser{}, err
 	}
@@ -176,7 +176,7 @@ func (c *Client) IndexUser(opts *IndexUserOptions) (IndexedUser, error) {
 	}
 
 	r, err := http.NewRequest(http.MethodPost,
-		fmt.Sprintf("%s/users/index", baseEndpoint), buf)
+		fmt.Sprintf("%s/users", baseEndpoint), buf)
 	if err != nil {
 		return IndexedUser{}, err
 	}
@@ -244,7 +244,7 @@ func (c *Client) FetchReceipt(id string) (*Receipt, error) {
 	p := new(receiptResponse)
 
 	r, err := http.NewRequest(http.MethodGet,
-		fmt.Sprintf("%s/verify/%s", baseEndpoint, id), nil)
+		fmt.Sprintf("%s/send/%s", baseEndpoint, id), nil)
 	if err != nil {
 		return nil, err
 	}
