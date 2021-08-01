@@ -76,7 +76,7 @@ func TestClient_User(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEqual(t, idxUser.Identifier, newIdxUser.Identifier)
 
-	require.NoError(t, c.DeIndexUser(&DeIndexUserOptions{
+	require.NoError(t, c.DeleteUser(&DeIndexUserOptions{
 		UserReference: idxUser.Reference,
 	}))
 }
