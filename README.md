@@ -30,7 +30,7 @@ go get github.com/fluidcoins/thepeer
 	require.NoError(t, err)
 	require.NotEqual(t, idxUser.Identifier, newIdxUser.Identifier)
 
-	c.DeIndexUser(&DeIndexUserOptions{
+	c.DeleteUser(&DeIndexUserOptions{
 		UserReference: idxUser.Reference,
 	})
 
@@ -39,7 +39,7 @@ go get github.com/fluidcoins/thepeer
 
 ### Status
 - [x] Index user
-- [x] De-index user
+- [x] Delete user
 - [x] Update user
-- [x] Fetch/Verify a receipt
-- [x] Send receipt
+- [x] Fetch a send receipt
+- [x] Process a send receipt
